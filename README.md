@@ -2,16 +2,16 @@
 
 ## Descripción
 
-En este laboratorio utilicé **Wireshark** para analizar las diferencias entre una comunicación realizada mediante **HTTP** y otra protegida con **HTTPS (TLS)**.
+En este proyecto utilicé **Wireshark** para comparar cómo viaja la información cuando una aplicación utiliza **HTTP** y cuando utiliza **HTTPS (TLS)**.
 
-El objetivo fue observar qué información puede obtener un atacante al capturar tráfico de red y comprobar cómo el cifrado de TLS protege la confidencialidad de los datos durante su transmisión.
+El objetivo fue demostrar la diferencia entre transmitir información sin cifrado y hacerlo mediante una conexión protegida con TLS, observando el contenido de los paquetes capturados en ambos escenarios.
 
 ---
 
-## Información del laboratorio
+## Información del proyecto
 
 | Herramienta | Wireshark |
-|------------|-----------|
+|-------------|-----------|
 | Protocolos analizados | HTTP, HTTPS (TLS) |
 | Objetivo | Comparar tráfico sin cifrar y tráfico cifrado |
 | Tipo de análisis | Captura e inspección de paquetes |
@@ -21,71 +21,59 @@ El objetivo fue observar qué información puede obtener un atacante al capturar
 
 # 1. Captura del tráfico HTTP
 
-Como primera prueba envié un formulario utilizando **HTTP** y capturé el tráfico generado con Wireshark.
+Para comenzar, envié un formulario utilizando **HTTP** y capturé el tráfico generado con Wireshark.
 
-Para localizar únicamente las solicitudes enviadas mediante el método **POST**, apliqué el siguiente filtro:
+Con el objetivo de localizar únicamente las solicitudes enviadas mediante el método **POST**, apliqué el siguiente filtro:
 
 ```text
 http.request.method == "POST"
 ```
 
-Este filtro permitió identificar rápidamente los paquetes que contenían la información enviada desde el navegador hacia el servidor.
+Este filtro permitió identificar rápidamente el paquete que contenía la información enviada desde el navegador hacia el servidor.
 
-![Filtrado HTTP POST](evidencia/foto2_post_credentials.png)
+![Filtro HTTP POST](evidencia/http.request.method%20==%20POST.png)
 
 ---
 
 # 2. Inspección del contenido transmitido
 
-Una vez localizada la comunicación, utilicé la opción **Follow TCP Stream** para reconstruir la conversación completa entre el cliente y el servidor.
+Una vez identificada la comunicación, utilicé la opción **Follow TCP Stream** para reconstruir la conversación completa entre el cliente y el servidor.
 
-Al revisar el flujo observé que los datos enviados por el formulario, como nombres, direcciones de correo electrónico y números de teléfono, viajaban completamente en **texto plano**.
+Al inspeccionar el flujo fue posible comprobar que los datos enviados por el formulario, como nombres, direcciones de correo electrónico y números de teléfono, viajaban completamente en **texto plano**.
 
-Esto demuestra que HTTP no incorpora mecanismos de cifrado durante la transmisión de la información. Como consecuencia, cualquier persona con acceso al tráfico de la red podría inspeccionar los paquetes y visualizar su contenido sin necesidad de realizar ningún proceso de descifrado.
+Esto demuestra que HTTP no cifra la información durante la transmisión. Como consecuencia, cualquier persona con acceso al tráfico de la red podría visualizar estos datos mediante técnicas de captura de paquetes.
 
-![Datos visibles mediante HTTP](evidencia/foto3_follow_stream.png)
+![Datos visibles en texto plano](evidencia/Evidencia%20de%20texto%20plano.png)
 
 ---
 
 # 3. Comparación con HTTPS (TLS)
 
-Después repetí la misma prueba utilizando una conexión protegida mediante **HTTPS**.
+Después repetí exactamente la misma prueba utilizando una conexión protegida mediante **HTTPS**.
 
-Para visualizar únicamente el tráfico correspondiente a TLS utilicé el siguiente filtro:
+Para visualizar únicamente el tráfico cifrado utilicé el siguiente filtro:
 
 ```text
 tls
 ```
 
-Aunque los paquetes seguían siendo visibles en Wireshark, el contenido ya no podía interpretarse. Al reconstruir la conversación mediante **Follow TCP Stream**, toda la información aparecía cifrada.
+Aunque los paquetes seguían siendo visibles en Wireshark, el contenido ya no podía interpretarse. Al reconstruir la conversación utilizando **Follow TCP Stream**, toda la información aparecía cifrada.
 
-Esta diferencia demuestra cómo **TLS protege la confidencialidad de los datos durante la transmisión**, impidiendo que un tercero pueda leer la información capturada mediante técnicas de sniffing.
+Esto demuestra cómo **TLS protege la confidencialidad de los datos durante la transmisión**, evitando que un tercero pueda interpretar la información capturada.
 
-![Tráfico cifrado mediante TLS](evidencia/trafico_TLS_SSL_y_QUIC_2.jpg)
-
----
-
-# 4. Evidencias del laboratorio
-
-Las siguientes capturas corresponden a las distintas etapas del análisis realizado:
-
-| Evidencia | Descripción |
-|-----------|-------------|
-| foto2_post_credentials.png | Captura de una solicitud HTTP POST. |
-| foto3_follow_stream.png | Reconstrucción del flujo TCP mostrando los datos en texto plano. |
-| trafico_TLS_SSL_y_QUIC_2.jpg | Comparación entre tráfico HTTP y tráfico protegido mediante TLS. |
+![Tráfico TLS cifrado](evidencia/tráfico%20TLS%20SSL%20y%20QUIC.png)
 
 ---
 
 # Conclusiones
 
-Este laboratorio permitió comprobar de forma práctica la diferencia entre transmitir información mediante **HTTP** y hacerlo utilizando **HTTPS**.
+Este proyecto permitió comprobar de forma práctica la diferencia entre utilizar **HTTP** y **HTTPS**.
 
 Las principales conclusiones fueron:
 
-- HTTP transmite la información sin cifrado, por lo que los datos pueden visualizarse fácilmente al capturar el tráfico de la red.
-- HTTPS utiliza TLS para cifrar la comunicación entre el cliente y el servidor, evitando que la información pueda interpretarse aunque los paquetes sean interceptados.
-- TLS protege la información durante su transmisión, pero no reemplaza otras medidas de seguridad necesarias para proteger una aplicación web.
+- HTTP transmite la información sin cifrado, por lo que cualquier persona que capture el tráfico puede visualizar los datos enviados.
+- HTTPS utiliza TLS para cifrar la comunicación entre el cliente y el servidor, impidiendo que el contenido pueda leerse aunque los paquetes sean interceptados.
+- TLS protege la información durante la transmisión, pero no garantiza por sí solo que una aplicación web sea completamente segura.
 
 ---
 
@@ -95,26 +83,26 @@ Las principales conclusiones fueron:
 
 No.
 
-Wireshark es un **analizador de protocolos de red (Network Protocol Analyzer)** utilizado para capturar e inspeccionar paquetes con fines de monitoreo, resolución de problemas y análisis forense.
+Wireshark es un **analizador de protocolos de red** (*Network Protocol Analyzer*). Su función consiste en capturar e inspeccionar paquetes para tareas de monitoreo, resolución de problemas y análisis forense.
 
-No bloquea, modifica ni filtra el tráfico de la red, por lo que no debe confundirse con un IDS o un IPS.
+No bloquea, modifica ni filtra el tráfico de la red.
 
 ---
 
-## ¿HTTPS garantiza que un sitio web es completamente seguro?
+## ¿HTTPS garantiza que un sitio web sea completamente seguro?
 
 No.
 
-HTTPS protege la comunicación entre el cliente y el servidor mediante el uso de **TLS**, asegurando la confidencialidad e integridad de los datos durante su transmisión.
+HTTPS protege la comunicación entre el cliente y el servidor mediante **TLS**, asegurando la confidencialidad de los datos durante la transmisión.
 
-Sin embargo, una aplicación web puede utilizar HTTPS y seguir siendo vulnerable a ataques como:
+Sin embargo, una aplicación puede utilizar HTTPS y seguir siendo vulnerable a ataques como:
 
 - SQL Injection (SQLi)
 - Cross-Site Scripting (XSS)
 - Errores de autenticación
 - Configuraciones inseguras del servidor
 
-Por este motivo, HTTPS representa una medida de seguridad fundamental, pero solo constituye una parte de la seguridad total de una aplicación.
+Por este motivo, HTTPS representa una medida de seguridad muy importante, pero no reemplaza otras buenas prácticas de seguridad.
 
 ---
 
@@ -129,4 +117,4 @@ Por este motivo, HTTPS representa una medida de seguridad fundamental, pero solo
 
 ---
 
-*Laboratorio realizado con fines educativos para practicar el análisis de tráfico de red utilizando Wireshark.*
+**Proyecto realizado con fines educativos para practicar el análisis de tráfico de red mediante Wireshark.**
